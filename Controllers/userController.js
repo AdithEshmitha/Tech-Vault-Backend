@@ -1,3 +1,4 @@
+import axios from "axios";
 import Users from "../Models/userModel.js";
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
@@ -87,6 +88,71 @@ export async function getUser(req, res) {
     }
 
 }
+
+// export async function googleLogin(req, res) {
+
+//     const googleToken = req.body.token;
+
+//     try {
+
+//         const response = await axios.get("https://www.googleapis.com/auth/userinfo", {
+//             headers: {
+//                 Authorization: `Bearer ${googleToken}`
+//             }
+//         });
+
+//         const user = await Users.findOne({
+//             email: response.data.email
+//         });
+
+//         if (user) {
+//             const token = jwt.sign(
+//                 {
+//                     fullName: user.fullName,
+//                     email: user.email,
+//                     mobileNumber: user.mobileNumber,
+//                     role: user.role,
+//                     isBlocked: user.isBlocked,
+//                     isEmailVeryfied: user.isEmailVeryfied,
+//                     profileImage: user.profileImage
+//                 },
+//                 "sayu0317"
+//             );
+
+//             res.json({ massage: "Login Successfull", token: token });
+//         } else {
+//             const newUser = new Users({
+//                 fullName: response.data.name,
+//                 email: response.data.email,
+//                 password: "123",
+//                 mobileNumber: "",
+//                 role: "user",
+//                 isBlocked: false,
+//                 isEmailVeryfied: true,
+//                 profileImage: response.data.picture
+//             });
+
+//             const response = await newUser.save();
+//             const token = jwt.sign(
+//                 {
+//                     fullName: response.fullName,
+//                     email: response.email,
+//                     mobileNumber: response.mobileNumber,
+//                     role: response.role,
+//                     isBlocked: response.isBlocked,
+//                     isEmailVeryfied: response.isEmailVeryfied,
+//                     profileImage: response.profileImage
+//                 },
+//                 "sayu0317"
+//             );
+//             res.json({ massage: "Login Successfull", token: token });
+//         }
+
+//     } catch (error) {
+//         console.log(error);
+//         res.status(500).json({ massage: "Failed to fetch user", error: error.message });
+//     }
+// }
 
 // Authontication User
 export function isAdminCheck(req) {
