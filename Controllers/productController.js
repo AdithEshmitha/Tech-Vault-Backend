@@ -28,7 +28,7 @@ export async function createProduct(req, res) {
 export async function getProduct(req, res) {
     try {
         if (isAdminCheck(req)) {
-            const products = await Products.find();
+            const products = await Products.find({ $or: [{ isAvailable: true }, { isAvailable: false }] });
             res.json(products);
         } else {
             const products = await Products.find({ isAvailable: true });
@@ -129,5 +129,31 @@ export async function getProductInfo(req, res) {
             res.status(500).json({ massage: "Failed to fetch product" })
         }
     }
+
+}
+
+// Search Products
+export async function searchProducts(req, res) {
+
+    const query = req.params.query;
+
+    try {
+
+        const products = await Products.find({
+            $or: [
+                { productName: { $regex: query, $options: "i" } },
+                { description: { $regex: query, $options: "i" } },
+                { category: { $regex: query, $options: "i" } }
+            ],
+            isAvailable: true
+        })
+
+        res.json(products);
+
+    } catch (error) {
+
+        return res.status(500).json({ message: "Failed to search products", error: error.message });
+
+    };
 
 }

@@ -89,70 +89,63 @@ export async function getUser(req, res) {
 
 }
 
-// export async function googleLogin(req, res) {
 
-//     const googleToken = req.body.token;
+export async function googleLogin(req, res) {
+    const googleToken = req.body.token;
 
-//     try {
+    try {
+        const googleRes = await axios.get("https://www.googleapis.com/oauth2/v3/userinfo", {
+            headers: {
+                Authorization: `Bearer ${googleToken}`
+            }
+        });
 
-//         const response = await axios.get("https://www.googleapis.com/auth/userinfo", {
-//             headers: {
-//                 Authorization: `Bearer ${googleToken}`
-//             }
-//         });
+        const { email, name, picture } = googleRes.data;
 
-//         const user = await Users.findOne({
-//             email: response.data.email
-//         });
+        const user = await Users.findOne({ email: email });
 
-//         if (user) {
-//             const token = jwt.sign(
-//                 {
-//                     fullName: user.fullName,
-//                     email: user.email,
-//                     mobileNumber: user.mobileNumber,
-//                     role: user.role,
-//                     isBlocked: user.isBlocked,
-//                     isEmailVeryfied: user.isEmailVeryfied,
-//                     profileImage: user.profileImage
-//                 },
-//                 "sayu0317"
-//             );
+        if (user) {
+            const token = jwt.sign(
+                {
+                    fullName: user.fullName,
+                    email: user.email,
+                    role: user.role,
+                    profileImage: user.profileImage
+                },
+                "sayu0317"
+            );
 
-//             res.json({ massage: "Login Successfull", token: token });
-//         } else {
-//             const newUser = new Users({
-//                 fullName: response.data.name,
-//                 email: response.data.email,
-//                 password: "123",
-//                 mobileNumber: "",
-//                 role: "user",
-//                 isBlocked: false,
-//                 isEmailVeryfied: true,
-//                 profileImage: response.data.picture
-//             });
+            return res.json({ message: "Login Successful", token: token, role: user.role });
+        } else {
+            const newUser = new Users({
+                fullName: name,
+                email: email,
+                password: "123",
+                role: "user",
+                isEmailVeryfied: true,
+                profileImage: picture
+            });
 
-//             const response = await newUser.save();
-//             const token = jwt.sign(
-//                 {
-//                     fullName: response.fullName,
-//                     email: response.email,
-//                     mobileNumber: response.mobileNumber,
-//                     role: response.role,
-//                     isBlocked: response.isBlocked,
-//                     isEmailVeryfied: response.isEmailVeryfied,
-//                     profileImage: response.profileImage
-//                 },
-//                 "sayu0317"
-//             );
-//             res.json({ massage: "Login Successfull", token: token });
-//         }
+            const savedUser = await newUser.save();
 
-//     } catch (error) {
-//         console.log(error);
-//         res.status(500).json({ massage: "Failed to fetch user", error: error.message });
-//     }
-// }
+            const token = jwt.sign(
+                {
+                    fullName: savedUser.fullName,
+                    email: savedUser.email,
+                    role: savedUser.role,
+                    profileImage: savedUser.profileImage
+                },
+                "sayu0317"
+            );
+            return res.json({ message: "Login Successful", token: token, role: savedUser.role });
+        }
+
+    } catch (error) {
+        console.error("Google Login Error:", error.response?.data || error.message);
+        res.status(500).json({ message: "Failed to fetch user", error: error.message });
+    }
+}
+
 
 // Authontication User
 export function isAdminCheck(req) {
