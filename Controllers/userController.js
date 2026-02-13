@@ -2,6 +2,21 @@ import axios from "axios";
 import Users from "../Models/userModel.js";
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import dotenv from "dotenv";
+import nodemailer from 'nodemailer';
+import OTP from "../Models/otpModel.js";
+
+dotenv.config();
+
+const transporter = nodemailer.createTransport({
+    host: "smtp.gmail.com",
+    port: 587,
+    secure: false,
+    auth: {
+        user: "aditheshmitha2008@gmail.com",
+        pass: process.env.APP_PASSWORD
+    }
+})
 
 
 // Register New User
@@ -145,6 +160,79 @@ export async function googleLogin(req, res) {
         res.status(500).json({ message: "Failed to fetch user", error: error.message });
     }
 }
+
+// Send OTP to Email
+export async function sendOTP(req, res) {
+
+    const email = req.body.email;
+
+    try {
+
+        const otpCode = Math.floor(100000 + Math.random() * 900000);
+
+        await OTP.deleteMany({ email: email });
+        const newOTP = new OTP({ email: email, otp: otpCode });
+        await newOTP.save();
+
+        const message = {
+            from: "aditheshmitha2008@gmail.com",
+            to: email,
+            subject: "Your OTP Code",
+            text: `Your OTP code is: ${otpCode}`
+        }
+
+        transporter.sendMail(message, (err, info) => {
+            if (err) {
+                console.log(err);
+                res.status(500).json({ message: "Failed to send OTP", error: err.message });
+            } else {
+                console.log("Email sent: " + info.response);
+                res.json({ message: "OTP sent successfully", otp: otpCode });
+            }
+        })
+
+        res.json({ message: "OTP sent successfully", otp: otpCode });
+
+    } catch (error) {
+        return res.status(500).json({ message: "Failed to send OTP", error: error.message });
+    }
+
+}
+
+
+// Reset Password
+export async function resetPassword(req, res) {
+
+    const { email, otp, newPassword } = req.body;
+
+    try {
+
+        const otpRecord = await OTP.findOne({ email: email, otp: otp });
+
+        if (!otpRecord) {
+            return res.status(400).json({ message: "Invalid OTP" });
+        }
+
+        const user = await Users.findOne({ email: email });
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const hashedPassword = bcrypt.hashSync(newPassword, 10);
+
+        await Users.updateOne({ email: email }, { password: hashedPassword });
+        await OTP.deleteMany({ email: email });
+
+        res.json({ message: "Password reset successful" });
+
+    } catch (error) {
+        return res.status(500).json({ message: "Failed to reset password", error: error.message });
+    }
+
+}
+
+
 
 
 // Authontication User

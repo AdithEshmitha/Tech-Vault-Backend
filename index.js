@@ -6,12 +6,15 @@ import productRouter from './Routes/productRouter.js';
 import middlewereAuth from './Middlewere/authonticationMiddlewere.js';
 import cors from 'cors';
 import orderRouter from './Routes/orderRouter.js';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const app = express();
 
 
 // MondoDB Connection String
-const connectionString = "mongodb+srv://admin:banda2008@project-one.56pt6nl.mongodb.net/";
+const connectionString = process.env.MONGO_URL;
 
 // Middlewere
 app.use(bodyParser.json());

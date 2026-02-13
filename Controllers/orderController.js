@@ -3,9 +3,6 @@ import Products from '../Models/productModel.js';
 
 // Create a new order
 export async function createOrder(req, res) {
-
-    // console.log(req.body)
-
     try {
 
         if (req.user == null) {
