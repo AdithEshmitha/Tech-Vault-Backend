@@ -232,6 +232,74 @@ export async function resetPassword(req, res) {
 
 }
 
+// Update User Profile Image
+export async function updateProfileImage(req, res) {
+
+    const profileImageUrl = req.body.profileImage;
+    const email = req.body.email;
+
+    try {
+
+        const user = await Users.findOne({ email: email });
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // Fixed: Added the update condition and proper update syntax
+        await Users.updateOne(
+            { email: email }, // Find user by email
+            { $set: { profileImage: profileImageUrl } } // Update profileImage field
+        );
+
+        res.json({ message: "Profile image updated successfully", profileImage: profileImageUrl });
+
+    } catch (error) {
+        return res.status(500).json({ message: "Failed to update profile image", error: error.message });
+    }
+
+}
+
+
+export async function updateProfile(req, res) {
+    const { fullName, mobileNumber, email } = req.body;
+    const token = req.headers.authorization?.split(' ')[1];
+
+    try {
+        if (!token) {
+            return res.status(401).json({ message: "Unauthorized" });
+        }
+
+        const user = await Users.findOne({ email: email });
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        await Users.updateOne(
+            { email: email },
+            {
+                $set: {
+                    fullName: fullName,
+                    mobileNumber: mobileNumber
+                }
+            }
+        );
+
+        res.json({
+            message: "Profile updated successfully",
+            user: {
+                fullName,
+                mobileNumber,
+                email
+            }
+        });
+
+    } catch (error) {
+        return res.status(500).json({ message: "Failed to update profile", error: error.message });
+    }
+}
+
 
 
 
