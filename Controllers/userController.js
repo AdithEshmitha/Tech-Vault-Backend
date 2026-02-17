@@ -300,6 +300,15 @@ export async function updateProfile(req, res) {
     }
 }
 
+// Get All Users (Admin)
+export async function getAllUsers(req, res) {
+    try {
+        const users = await Users.find({}, '-password'); // Exclude password field
+        res.json(users);
+    } catch (error) {
+        return res.status(500).json({ message: "Failed to fetch users", error: error.message });
+    }
+}
 
 
 

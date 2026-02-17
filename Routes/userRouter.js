@@ -1,10 +1,11 @@
 import express from 'express';
-import { createUser, getUser, googleLogin, loginUser, resetPassword, sendOTP, updateProfile, updateProfileImage } from '../Controllers/userController.js';
+import { createUser, getAllUsers, getUser, googleLogin, loginUser, resetPassword, sendOTP, updateProfile, updateProfileImage } from '../Controllers/userController.js';
 
 const userRouter = express.Router();
 
 userRouter.post("/", createUser);
 userRouter.get("/", getUser);
+userRouter.get("/all-users", getAllUsers);
 userRouter.post("/login", loginUser);
 userRouter.post("/google-login", googleLogin);
 userRouter.post("/send-otp", sendOTP);
